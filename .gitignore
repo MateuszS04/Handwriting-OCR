@@ -30,6 +30,7 @@ Thumbs.db
 .vscode/
 
 # Project artifacts (data is large; keep .gitkeep only)
+/data/*
 /data/gt_raw/*
 data/pages/*
 data/lines/*
