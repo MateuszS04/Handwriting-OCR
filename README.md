@@ -28,7 +28,6 @@ Listy PDFs/JPGs
   -> data/lines
   -> data/lines_merged/<page_id>/
   -> data/gt_raw/gemini_lines.json
-  -> data/splits/all.jsonl
   -> data/splits/train.jsonl / val.jsonl / test.jsonl
 ```
 
@@ -56,6 +55,9 @@ Projekt_ML/
 │   ├── geminilabel/
 │   │   ├── gemini_context_label.py
 │   │   └── connect_transcripts.py
+│   ├── train/
+│   │   ├── dataset_prep.py
+│   │   └── Dataset.py
 │   └── utils/
 │       └── io.py
 ├── requirements.txt
@@ -284,22 +286,26 @@ Line record example:
 The script is resumable. It saves after every page batch and skips already
 labeled `file` entries unless you pass `--overwrite`.
 
-## 7. Create Training Manifests
+## 7. Prepare Train / Val / Test Splits
 
-Connect the segmented line images with Gemini transcriptions.
+Convert the Gemini transcription JSON into separate training split files.
+This step validates that each image exists, removes empty transcriptions, and
+splits by page so lines from one page do not leak across train/val/test.
 
 ```bash
-python -m src.geminilabel.connect_transcripts \
+python -m src.train.dataset_prep \
+  --manifest data/gt_raw/gemini_lines.json \
   --lines-dir data/lines_merged \
-  --transcripts data/gt_raw/gemini_lines.json \
-  --out data/splits/all.jsonl \
-  --splits-dir data/splits
+  --out-dir data/splits \
+  --by page \
+  --train 0.8 \
+  --val 0.1 \
+  --test 0.1
 ```
 
 Outputs:
 
 ```text
-data/splits/all.jsonl
 data/splits/train.jsonl
 data/splits/val.jsonl
 data/splits/test.jsonl
@@ -323,13 +329,20 @@ Training JSONL record example:
 Optional confidence filter:
 
 ```bash
-python -m src.geminilabel.connect_transcripts \
+python -m src.train.dataset_prep \
+  --manifest data/gt_raw/gemini_lines.json \
   --lines-dir data/lines_merged \
-  --transcripts data/gt_raw/gemini_lines.json \
-  --out data/splits/all.jsonl \
-  --splits-dir data/splits \
+  --out-dir data/splits \
   --min-confidence 0.75
 ```
+
+The dataset class used later by a TrOCR training script is
+`src/train/Dataset.py`. It does not write files by itself. It loads one of the
+split JSONL files, opens each line image, and converts it to:
+
+- `pixel_values` from `TrOCRProcessor`,
+- tokenized `labels`,
+- `-100` masked padding labels for the loss.
 
 ## Full Command Sequence
 
@@ -365,11 +378,14 @@ python -m src.geminilabel.gemini_context_label \
   --lines-dir data/lines_merged \
   --out data/gt_raw/gemini_lines.json
 
-python -m src.geminilabel.connect_transcripts \
+python -m src.train.dataset_prep \
+  --manifest data/gt_raw/gemini_lines.json \
   --lines-dir data/lines_merged \
-  --transcripts data/gt_raw/gemini_lines.json \
-  --out data/splits/all.jsonl \
-  --splits-dir data/splits
+  --out-dir data/splits \
+  --by page \
+  --train 0.8 \
+  --val 0.1 \
+  --test 0.1
 ```
 
 ## Notes

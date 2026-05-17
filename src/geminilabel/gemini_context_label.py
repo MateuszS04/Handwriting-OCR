@@ -45,8 +45,7 @@ except ImportError:  # allows --dry-run before optional deps are installed
     def wait_exponential(*args, **kwargs):
         return None
 
-from src.geminilabel.connect_transcripts import LineRecord, load_lines
-from src.utils.io import setup_logging
+from src.utils.io import LineRecord, load_lines, setup_logging
 
 log = logging.getLogger(__name__)
 

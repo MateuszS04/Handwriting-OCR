@@ -1,27 +1,21 @@
 # --- Data ---
 data:
-  lines_dir: data/lines
+  lines_dir: data/lines_merged
   splits_dir: data/splits           # expects train.jsonl / val.jsonl / test.jsonl
   gt_jsonl: data/gt_raw/gemini.jsonl
-  reviewed_jsonl: data/gt_reviewed/reviewed.jsonl   # optional, weighted higher
+  # reviewed_jsonl: data/gt_reviewed/reviewed.jsonl   # optional, weighted higher
   min_confidence: 0.0               # drop Gemini lines below this score
   max_target_length: 128
 
-# --- Splits (used by `dataset.py build_splits`) ---
-split:
-  by: page                          # "page" -> stratify by document, no leakage
-  train: 0.8
-  val:   0.1
-  test:  0.1
-  seed:  42
+
 
 # # --- Model ---
 # model:
-#   base_checkpoint: microsoft/trocr-large-handwritten
-#   # extra characters appended to the tokenizer if not already present
-#   extra_chars: ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż",
-#                 "Ą", "Ć", "Ę", "Ł", "Ń", "Ó", "Ś", "Ź", "Ż"]
-#   freeze_encoder_epochs: 1          # freeze ViT for the first N epochs
+  base_checkpoint: microsoft/trocr-large-handwritten
+  # extra characters appended to the tokenizer if not already present
+  extra_chars: ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż",
+                "Ą", "Ć", "Ę", "Ł", "Ń", "Ó", "Ś", "Ź", "Ż"]
+  freeze_encoder_epochs: 1          # freeze ViT for the first N epochs
 
 # # --- Augmentation (training split only) ---
 # augment:
